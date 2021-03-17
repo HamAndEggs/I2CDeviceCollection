@@ -7,11 +7,12 @@
 			[
 				"/usr/include",
 				"./source",
+				"./include"
 			],
 			"target":"library",
 			"output_name":"i2c",
 			"optimisation":2,
-			"standard":"c++11"
+			"standard":"c++14"
 		},
 		"debug":
 		{
@@ -19,11 +20,12 @@
 			[
 				"/usr/include",
 				"./source",
+				"./include"
 			],
 			"target":"library",
 			"output_name":"i2c_dbg",
 			"optimisation":0,
-			"standard":"c++11"
+			"standard":"c++14"
 		}
 	},
 	"source_files":

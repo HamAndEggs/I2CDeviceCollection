@@ -1,5 +1,8 @@
+
+
 #include <sys/ioctl.h>			//Needed for I2C port
 #include <linux/i2c-dev.h>		//Needed for I2C port
+#include <i2c/smbus.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string>
