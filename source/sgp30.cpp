@@ -50,27 +50,33 @@ bool SGP30::Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCal
     mWorker = std::thread([this,pReadingCallback]()
     {
         mRunWorker = true;
-        SendCommand(0x03); // “Init_air_quality” command.
-        // Now wait 15 seconds to taking readings. Done in a loop once second at a tim so we can still exit.
-        for( int n = 0 ; n < 15 && mRunWorker ; n++ )
+        if( SendCommand(0x03) ) // “Init_air_quality” command.
         {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-
-        // Now take the readings.
-        while( mRunWorker )
-        {
-            SendCommand(0x08); // “Measure_air_quality” command.
-
-            // Read results.
-            const std::vector<uint16_t> data = ReadResults(2);
-            if( data.size() == 2 )
+            // Now wait 15 seconds to taking readings. Done in a loop once second at a tim so we can still exit.
+            for( int n = 0 ; n < 15 && mRunWorker ; n++ )
             {
-                pReadingCallback(data[0],data[1]);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
 
-            // Wait once second before going again. As per the data sheet.
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            // Now take the readings.
+            while( mRunWorker )
+            {
+                if( SendCommand(0x08) ) // “Measure_air_quality” command.
+                {
+                    // Read results.
+                    const std::vector<uint16_t> data = ReadResults(2);
+                    if( data.size() == 2 )
+                    {
+                        pReadingCallback(data[0],data[1]);
+                    }
+                }
+                // Wait once second before going again. As per the data sheet.
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+        }
+        else
+        {
+            std::cerr << "Failed to start readings\n";
         }
     });
 
