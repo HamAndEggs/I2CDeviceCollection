@@ -2,7 +2,10 @@
 
 #include <sys/ioctl.h>			//Needed for I2C port
 #include <linux/i2c-dev.h>		//Needed for I2C port
-#include <i2c/smbus.h>
+extern "C" // For the broken header.
+{
+	#include <i2c/smbus.h>
+}
 #include <unistd.h>
 #include <fcntl.h>
 #include <string>
@@ -21,7 +24,7 @@ Device::Device(int pAddress,int pBus) : mFile(0)
 	{
 		if (ioctl(mFile, I2C_SLAVE, pAddress) == 0)
 		{
-			std::cout << "i2c device open 0x" << std::hex << pAddress << std::dec << std::endl;
+			std::cerr << "i2c device open 0x" << std::hex << pAddress << "\n";
 		}
 		else
 		{
@@ -67,6 +70,16 @@ int32_t Device::ReadData(uint8_t pCommand,uint8_t* pData,int32_t pDataSize)const
 	}
 	return -1;
 }
+
+int32_t Device::ReadData(uint8_t* pData,int32_t pDataSize)const
+{
+	if( IsOpen() )
+	{
+		return read(mFile,pData,pDataSize);
+	}
+	return -1;
+}
+
 
 int32_t Device::WriteByte(uint8_t pValue)const
 {

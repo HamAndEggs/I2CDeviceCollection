@@ -87,7 +87,7 @@ ADS1015::ADS1015(int pAddress,int pBus):Device(pAddress,pBus)
 {
     if( !IsOpen() )
     {
-        std::cout << "Failed to open ADS1015" << std::endl;
+        std::cerr << "Failed to open ADS1015\n";
         return;
     }
 

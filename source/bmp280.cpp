@@ -15,7 +15,7 @@ BMP280::BMP280(int pAddress,int pBus):Device(pAddress,pBus),
 {
     if( !IsOpen() )
     {
-        std::cout << "Failed to open BMP280" << std::endl;
+        std::cerr << "Failed to open BMP280\n";
         return;
     }
 
@@ -38,7 +38,7 @@ BMP280::BMP280(int pAddress,int pBus):Device(pAddress,pBus),
 
     if( !GotChipId )
     {
-        std::cout << "Failed to find BMP280 chip Id. Check chip address." << std::endl;
+        std::cerr << "Failed to find BMP280 chip Id. Check chip address.\n";
         Close();
         return;        
     }
@@ -56,7 +56,7 @@ BMP280::BMP280(int pAddress,int pBus):Device(pAddress,pBus),
 
 	if( ReadData(BMP280_TEMPERATURE_CALIB_DIG_T1_LSB_REG,a_data_u8,BMP280_PRESSURE_TEMPERATURE_CALIB_DATA_LENGTH) == -1 )
     {
-        std::cout << "Failed to get BMP280 calibration parameters." << std::endl;
+        std::cout << "Failed to get BMP280 calibration parameters.\n";
         return;        
     }
 
@@ -247,7 +247,7 @@ bool BMP280::SetStandbyMode(uint8_t pMode)
 bool BMP280::ReadRawData(int32_t& rPressureRaw, int32_t& rTemperatureRaw)
 {
 	/* variable used to return communication result*/
-	BMP280_RETURN_FUNCTION_TYPE com_rslt = ERROR;
+//	BMP280_RETURN_FUNCTION_TYPE com_rslt = ERROR;
 	/* Array holding the temperature and pressure data
 	 a_data_u8[0] - Pressure MSB
 	 a_data_u8[1] - Pressure LSB

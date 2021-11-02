@@ -269,7 +269,7 @@ int TSL2561::CalculateLux(uint32_t pChannel0,uint32_t pChannel1)const
 		break;
 
 	default: // assume no scaling
-	case INTERGRATION_TIME_401MS:CalculateLux:
+	case INTERGRATION_TIME_401MS:
 		chScale = (1 << CH_SCALE);
 		break;
 	}
@@ -357,7 +357,7 @@ void TSL2561::UpdateRegisterTiming()
 	assert( IsOpen() );
 	uint8_t value = 0;
 	if( mEnableGain )
-		value != 0x10;
+		value = 0x10;
 
 	switch(mIntergrationTime)
 	{
