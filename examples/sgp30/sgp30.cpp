@@ -32,21 +32,32 @@ int main(int argc, char *argv[])
     i2c::SGP30 airQuality;
     uint16_t currentECO2 = 0;
     uint16_t currentTVOC = 0;
+    bool haveReadings = false;
 
-    auto callback = [&currentECO2,&currentTVOC](uint16_t pECO2,uint16_t pTVOC)
+    auto callback = [&currentECO2,&currentTVOC,&haveReadings](uint16_t pECO2,uint16_t pTVOC)
     {
         currentECO2 = pECO2;
         currentTVOC = pTVOC;
+        haveReadings = true;
+        std::clog << "\n";
     };
 
     if( airQuality.Start(callback) )
     {
+        std::clog << "warming up";
         // And wait for quit...
         // Normally we'll be doing other stuff...
         while( CTRL_C_Pressed == false )
         {
             std::this_thread::sleep_for(std::chrono::seconds(1));
-            std::clog << "eCO2:" << currentECO2 << " tVOC:" << currentTVOC << "\n";
+            if( haveReadings )
+            {
+                std::clog << "eCO2:" << currentECO2 << " tVOC:" << currentTVOC << "\n";
+            }
+            else
+            {
+                std::clog << ".";
+            }
         }
     }
 
