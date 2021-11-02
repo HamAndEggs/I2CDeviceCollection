@@ -10,7 +10,7 @@
 				"./include"
 			],
 			"target":"library",
-			"output_name":"i2c_devices",
+			"output_name":"i2c_devices"
 		},
 		"debug":
 		{
@@ -21,7 +21,7 @@
 				"./include"
 			],
 			"target":"library",
-			"output_name":"i2c_devices_dbg",
+			"output_name":"i2c_devices_dbg"
 		}
 	},
 	"source_files":
