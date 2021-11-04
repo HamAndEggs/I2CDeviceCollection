@@ -10,9 +10,7 @@
 				"./include"
 			],
 			"target":"library",
-			"output_name":"i2c",
-			"optimisation":2,
-			"standard":"c++14"
+			"output_name":"i2c_devices"
 		},
 		"debug":
 		{
@@ -23,9 +21,7 @@
 				"./include"
 			],
 			"target":"library",
-			"output_name":"i2c_dbg",
-			"optimisation":0,
-			"standard":"c++14"
+			"output_name":"i2c_devices_dbg"
 		}
 	},
 	"source_files":
@@ -37,6 +33,7 @@
       "./source/pca9685.cpp",
       "./source/si1145.cpp",
       "./source/tmp102.cpp",
-      "./source/tsl2561.cpp"
+      "./source/tsl2561.cpp",
+      "./source/sgp30.cpp"
     ]
 }
