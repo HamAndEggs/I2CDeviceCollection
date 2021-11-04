@@ -14,6 +14,10 @@ class SGP30 : private Device
 {
 public:
 
+    static const int READING_RESULT_FAILED = 0;
+    static const int READING_RESULT_WARM_UP = 1;
+    static const int READING_RESULT_VALID = 2;
+
 	SGP30(int pAddress = 0x58,int pBus = 1);
     virtual ~SGP30();
 
@@ -23,7 +27,7 @@ public:
      * @param pReadingCallback When is all working the call back will be called once a second.
      * @return true If all started ok.
      */
-    bool Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCallback);
+    bool Start(std::function<void(int pReadingResult,uint16_t pECO2,uint16_t pTVOC)> pReadingCallback);
 
     /**
      * @brief Stops the worker thread that takes the reading.

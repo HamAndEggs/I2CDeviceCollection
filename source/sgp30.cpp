@@ -32,7 +32,7 @@ SGP30::~SGP30()
 }
 
 
-bool SGP30::Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCallback)
+bool SGP30::Start(std::function<void(int pReadingResult,uint16_t pECO2,uint16_t pTVOC)> pReadingCallback)
 {
     assert(pReadingCallback);
     if( !pReadingCallback )
@@ -50,37 +50,45 @@ bool SGP30::Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCal
     // two preprocessed air quality signals in the order CO2eq (ppm) and TVOC (ppb). For the first 15s after the “Init_air_quality”
     // command the sensor is in an initialization phase during which a “Measure_air_quality” command returns fixed values of
     // 400 ppm CO2eq and 0 ppb TVOC.
-
     mWorker = std::thread([this,pReadingCallback]()
     {
         mRunWorker = true;
         if( SendCommand(SGP30_CMD_IAQ_INIT) ) // “Init_air_quality” command.
         {
-            // Now wait 15 seconds to taking readings. Done in a loop once second at a tim so we can still exit.
-            for( int n = 0 ; n < 15 && mRunWorker ; n++ )
-            {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-            }
-
+            int warmUpCounter = 16;
             // Now take the readings.
             while( mRunWorker )
             {
-                if( SendCommand(SGP30_CMD_IAQ_MEASURE) ) // “Measure_air_quality” command.
+                if( warmUpCounter > 0 )
+                {
+                    warmUpCounter--;
+                    pReadingCallback(READING_RESULT_WARM_UP,0,0);
+                }
+                else if( SendCommand(SGP30_CMD_IAQ_MEASURE) ) // “Measure_air_quality” command.
                 {
                     // Read results.
                     const std::vector<uint16_t> data = ReadResults(2);
                     if( data.size() == 2 )
                     {
-                        pReadingCallback(data[0],data[1]);
+                        pReadingCallback(READING_RESULT_VALID,data[0],data[1]);
+                    }
+                    else
+                    {
+                        pReadingCallback(READING_RESULT_FAILED,0,0);
                     }
                 }
+                else
+                {
+                    pReadingCallback(READING_RESULT_FAILED,0,0);
+                }
+
                 // Wait once second before going again. As per the data sheet.
                 std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
         else
         {
-            std::cerr << "Failed to start readings\n";
+            pReadingCallback(READING_RESULT_FAILED,0,0);
         }
     });
 
