@@ -35,7 +35,7 @@ private:
     std::thread mWorker;    //<! This thread takes the readings.
     bool mRunWorker;
 
-    bool SendCommand(uint8_t pCommand);
+    bool SendCommand(const uint8_t pCommand[2]);
     std::vector<uint16_t> ReadResults(int pNumWords);
     uint8_t CalculateCRC(const uint8_t* pData,size_t pDataSize)const;
 };

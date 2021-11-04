@@ -8,7 +8,11 @@
 #define SGP30_FEATURESET 0x0020    ///< The required set for this library
 #define SGP30_CRC8_POLYNOMIAL 0x31 ///< Seed for SGP30's CRC polynomial
 #define SGP30_CRC8_INIT 0xFF       ///< Init value for CRC
-#define SGP30_WORD_LEN 2           ///< 2 bytes per word
+
+static const uint8_t SGP30_CMD_IAQ_INIT[]     = { 0x20, 0x03 };
+static const uint8_t SGP30_CMD_IAQ_MEASURE[]  = { 0x20, 0x08 };
+static const uint8_t SGP30_CMD_SELFTEST[] = { 0x20, 0x32 };
+static const uint8_t SGP30_SELFTEST_OK[] = { 0x00, 0xd4 };
 
 namespace i2c{
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +54,7 @@ bool SGP30::Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCal
     mWorker = std::thread([this,pReadingCallback]()
     {
         mRunWorker = true;
-        if( SendCommand(0x03) ) // “Init_air_quality” command.
+        if( SendCommand(SGP30_CMD_IAQ_INIT) ) // “Init_air_quality” command.
         {
             // Now wait 15 seconds to taking readings. Done in a loop once second at a tim so we can still exit.
             for( int n = 0 ; n < 15 && mRunWorker ; n++ )
@@ -61,7 +65,7 @@ bool SGP30::Start(std::function<void(uint16_t pECO2,uint16_t pTVOC)> pReadingCal
             // Now take the readings.
             while( mRunWorker )
             {
-                if( SendCommand(0x08) ) // “Measure_air_quality” command.
+                if( SendCommand(SGP30_CMD_IAQ_MEASURE) ) // “Measure_air_quality” command.
                 {
                     // Read results.
                     const std::vector<uint16_t> data = ReadResults(2);
@@ -93,11 +97,11 @@ void SGP30::Stop()
     }
 }
 
-bool SGP30::SendCommand(uint8_t pCommand)
+bool SGP30::SendCommand(const uint8_t pCommand[2])
 {
-    // This part has a 16bit command but linux api only allows 8bits.
-    // But turns out all commands start with 0x20 (with the exception of reading serial number). So...
-    return WriteByteData(0x20,pCommand) != -1;
+    const bool ret = WriteData(pCommand,2) == 2;
+    std::this_thread::sleep_for(std::chrono::milliseconds(12));
+    return ret;
 }
 
 std::vector<uint16_t> SGP30::ReadResults(int pNumWords)
@@ -113,14 +117,23 @@ std::vector<uint16_t> SGP30::ReadResults(int pNumWords)
         for( int n = 0 ; n < pNumWords ; n++ )
         {
             const int i = n * 3;
-            const uint8_t crc = buffer[i + 2];
+            uint8_t* reading = buffer + i;
 
-            if( crc == CalculateCRC(buffer,2) )
+            if( reading[2] == CalculateCRC(reading,2) )
             {
-                const uint16_t v = *((uint16_t*)(buffer + i));
+                std::swap(reading[0],reading[1]);// Correct for endian
+                const uint16_t v = *((uint16_t*)reading);
                 data.push_back(v);
             }
+            else
+            {
+                std::cerr << "CRC failed on read data\n";
+            }
         }
+    }
+    else
+    {
+        std::cerr << "Read data failed\n";
     }
     return data;
 }

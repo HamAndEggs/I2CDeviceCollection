@@ -20,12 +20,13 @@ public:
 	uint8_t ReadByteData(uint8_t pCommand)const;
 	uint16_t ReadWordData(uint8_t pCommand)const;
 	int32_t ReadData(uint8_t pCommand,uint8_t* pData,int32_t pDataSize)const;
-	int32_t ReadData(uint8_t* pData,int32_t pDataSize)const;
+	int32_t ReadData(void* pData,int32_t pDataSize)const;
 
 	int32_t WriteByte(uint8_t pValue)const;
 	int32_t WriteByteData(uint8_t pCommand,uint8_t pValue)const;
 	int32_t WriteWordData(uint8_t pCommand,uint16_t pValue)const;
 	int32_t WriteData(uint8_t pCommand,const uint8_t* pData,int32_t pDataSize)const;
+	int32_t WriteData(const void* pData,int32_t pDataSize)const;
 
 	bool IsOpen()const{return mFile > 0;}
 

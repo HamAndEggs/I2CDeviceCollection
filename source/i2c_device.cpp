@@ -4,7 +4,7 @@
 #include <linux/i2c-dev.h>		//Needed for I2C port
 extern "C" // For the broken header.
 {
-	#include <i2c/smbus.h>
+	#include <i2c/smbus.h> //sudo apt install libi2c-dev
 }
 #include <unistd.h>
 #include <fcntl.h>
@@ -24,12 +24,16 @@ Device::Device(int pAddress,int pBus) : mFile(0)
 	{
 		if (ioctl(mFile, I2C_SLAVE, pAddress) == 0)
 		{
-			std::cerr << "i2c device open 0x" << std::hex << pAddress << "\n";
+			std::cerr << "i2c device open 0x" << std::hex << pAddress << std::dec << "\n";
 		}
 		else
 		{
 			Close();
 		}
+	}
+	else
+	{
+		std::cerr << "Failed to open i2c device 0x" << std::hex << pAddress << std::dec << "\n";
 	}
 }
 
@@ -61,17 +65,14 @@ uint16_t Device::ReadWordData(uint8_t pCommand)const
 
 int32_t Device::ReadData(uint8_t pCommand,uint8_t* pData,int32_t pDataSize)const
 {
-	assert(pDataSize <= 32);
 	if( IsOpen() )
 	{
-		int32_t ret = i2c_smbus_read_i2c_block_data(mFile,pCommand,pDataSize,pData);
-		if( ret > 0 )
-			return ret;
+		return ::read(mFile,pData,pDataSize);
 	}
 	return -1;
 }
 
-int32_t Device::ReadData(uint8_t* pData,int32_t pDataSize)const
+int32_t Device::ReadData(void* pData,int32_t pDataSize)const
 {
 	if( IsOpen() )
 	{
@@ -79,7 +80,6 @@ int32_t Device::ReadData(uint8_t* pData,int32_t pDataSize)const
 	}
 	return -1;
 }
-
 
 int32_t Device::WriteByte(uint8_t pValue)const
 {
@@ -107,6 +107,13 @@ int32_t Device::WriteData(uint8_t pCommand,const uint8_t* pData,int32_t pDataSiz
 	assert(pDataSize <= 32);
 	if( IsOpen() )
 		return (int32_t)i2c_smbus_write_i2c_block_data(mFile,pCommand,(uint8_t)pDataSize,pData);
+	return -1;
+}
+
+int32_t Device::WriteData(const void* pData,int32_t pDataSize)const
+{
+	if( IsOpen() )
+		return ::write(mFile,pData,pDataSize);
 	return -1;
 }
 
